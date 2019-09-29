@@ -4,19 +4,14 @@ Parameters:
 
   VpcId:
     Type: String
-
   Subnets:
     Type: CommaDelimitedList
-
   NodeCount:
     Type: String
-
   KeyName:
     Type: String
-
   ImageId:
     Type: String
-
   AccessIp:
     Type: String
 
@@ -69,7 +64,7 @@ Resources:
       VPCZoneIdentifier: 
         Ref: Subnets
 
-  LaunchConfig:
+  LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties: 
       BlockDeviceMappings: 
@@ -84,8 +79,9 @@ Resources:
       SecurityGroups: 
         - Ref: SecurityGroup
       UserData: 
-        Fn::Base64: Fn::Sub: |
-          echo "Test" > /tmp/output.txt
+        Fn::Base64: 
+          Fn::Sub: |
+            echo "Test" > /tmp/output.txt
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -105,7 +101,6 @@ Resources:
           FromPort: 0
           IpProtocol: tcp
           ToPort: 65535
-
       Tags: 
         - Key: Name
           Value: 
@@ -114,20 +109,43 @@ Resources:
         Ref: VpcId
 
   IamProfile:
-
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: 
+        Fn::Sub: "${AWS::StackName}-IamProfile"
+      Roles: 
+        - Ref: IamRole
 
   IamRole:
     Type: AWS::IAM::Role
     Properties: 
-      AssumeRolePolicyDocument: Json
-      Description: String
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: 
+                - "ec2.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
       ManagedPolicyArns: 
-        - String
-      MaxSessionDuration: Integer
-      Path: String
-      PermissionsBoundary: String
-      Policies: 
-        - Policy
-      RoleName: String
+        - Ref: IamPolicy
+      RoleName: 
+        Fn::Sub: "${AWS::StackName}-IamRole"
       Tags: 
-        - Tag
+        - Key: Name
+          Value: 
+            Fn::Sub: "${AWS::StackName}-IamRole"
+
+  IamPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      ManagedPolicyName: 
+        Fn::Sub: "${AWS::StackName}-IamPolicy"
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+        - Effect: "Allow"
+          Action: "ec2:Read*"
+          Resource:
+            Fn::Sub: "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
