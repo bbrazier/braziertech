@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Deployment of a highly available LAMP stack
+Parameters:
+
+  VpcId:
+    Type: String
+
+  Subnets:
+    Type: CommaDelimitedList
+
+  NodeCount:
+    Type: String
+
+  KeyName:
+    Type: String
+
+Resources:
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      Scheme: internet-facing
+      SecurityGroups: 
+        - Ref: SecurityGroup
+      Subnets: 
+        Ref: Subnets
+      Tags: 
+        - Key: Name
+          Value: 
+            Fn::Sub: "${AWS::StackName}-LoadBalancer"
+      Type: application
+
+  TargetGroup:
+
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties: 
+      AvailabilityZones: 
+        - String
+      DesiredCapacity: 
+        Ref: NodeCount
+      HealthCheckGracePeriod: 30
+      HealthCheckType: EC2
+      LaunchConfigurationName: 
+        Ref: LaunchConfiguration
+      MaxSize: 
+        Ref: NodeCount
+      MinSize: 
+        Ref: NodeCount
+      Tags: 
+        - Key: Name
+          Value: 
+            Fn::Sub: "${AWS::StackName}-AutoScalingGroup"
+          PropagateAtLaunch: True
+      TargetGroupARNs: 
+        - Ref: TargetGroup
+      VPCZoneIdentifier: 
+        Ref: Subnets
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties: 
+      BlockDeviceMappings: 
+        - BlockDeviceMapping
+      IamInstanceProfile: 
+        Ref: IamProfile
+      ImageId: FIXME
+      InstanceType: t2.small
+      KeyName: 
+        Ref: KeyName
+      SecurityGroups: 
+        - Ref: SecurityGroup
+      UserData: FIXME
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: 
+        Fn::Sub: "${AWS::StackName} Security Group"
+      GroupName: 
+        Fn::Sub: "${AWS::StackName}-SecurityGroup"
+      SecurityGroupEgress: 
+        - 
+      SecurityGroupIngress: 
+        - 
+      Tags: 
+        - Key: Name
+          Value: 
+            Fn::Sub: "${AWS::StackName}-SecurityGroup"
+      VpcId: 
+        Ref: VpcId
+
+  IamProfile:
+
+
+  IamRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: Json
+      Description: String
+      ManagedPolicyArns: 
+        - String
+      MaxSessionDuration: Integer
+      Path: String
+      PermissionsBoundary: String
+      Policies: 
+        - Policy
+      RoleName: String
+      Tags: 
+        - Tag
