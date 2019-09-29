@@ -84,20 +84,63 @@ Resources:
             echo "Test" > /tmp/output.txt
 
             # Initial Config
-            sudo apt update
+
+            sudo apt update -y
+
+            # Set Variables
+
+            appname="application"
 
             # Install Apache
-            sudo apt install apache2
+
+            sudo apt install apache2 -y
             sudo mkdir /var/www/application
-            echo "<h1>Hello World</h1>" > /var/www/application/index.html
+            echo "<h1>$appname</h1>" > /var/www/html/index.html
 
             # Install Python
-            sudo apt-get install python3.6
-            sudo apt install python-pip
-            pip install boto3
 
-            # Configure DB
-            echo "dynamodb = boto3.resource('dynamodb') > /tmp/application.py
+            sudo apt-get install python3.6 -y
+            sudo apt install python3-pip -y
+            python3 -m pip install boto3
+
+            # Configure Application
+
+            mkdir /opt/$appname
+
+            echo "
+            from flask import Flask
+            app = Flask(__name__)
+            @app.route("/")
+            def hello():
+                # dynamodb = boto3.resource('dynamodb')
+                return "Hello world!"
+            if __name__ == "__main__":
+              app.run()
+            " > /opt/$appname/app.py
+
+            # Configure Apache
+
+            echo "
+            <VirtualHost *:80>
+                 # Add machine's IP address (use ifconfig command)
+                 ServerName 192.168.1.103
+                 # Give an alias to to start your website url with
+                 WSGIScriptAlias /testFlask /home/username/ExampleFlask/my_flask_app.wsgi
+                 <Directory /home/username/ExampleFlask/ExampleFlask/>
+                    # set permissions as per apache2.conf file
+                        Options FollowSymLinks
+                        AllowOverride None
+                        Require all granted
+                 </Directory>
+                 ErrorLog ${APACHE_LOG_DIR}/error.log
+                 LogLevel warn
+                 CustomLog ${APACHE_LOG_DIR}/access.log combined
+            </VirtualHost>
+            " > /etc/apache2/sites-available/$appname.conf
+
+            sudo a2ensite /etc/apache2/sites-available/$appname.conf
+
+            service apache2 restart
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -109,6 +152,10 @@ Resources:
       SecurityGroupEgress: 
         - CidrIp: 
             Ref: AccessIp
+          FromPort: 0
+          IpProtocol: tcp
+          ToPort: 65535
+        - CidrIp: 0.0.0.0/0
           FromPort: 0
           IpProtocol: tcp
           ToPort: 65535
