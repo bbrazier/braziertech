@@ -34,8 +34,8 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Port:
-        80
+      Port: 80
+      Protocol: HTTP
       Tags: 
         - Key: Name
           Value: 
