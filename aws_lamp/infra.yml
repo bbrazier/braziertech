@@ -14,6 +14,12 @@ Parameters:
   KeyName:
     Type: String
 
+  ImageId:
+    Type: String
+
+  AccessIp:
+    Type: String
+
 Resources:
 
   LoadBalancer:
@@ -31,13 +37,18 @@ Resources:
       Type: application
 
   TargetGroup:
-
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: 
+            Fn::Sub: "${AWS::StackName}-TargetGroup"
+      VpcId: 
+        Ref: VpcId
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties: 
-      AvailabilityZones: 
-        - String
       DesiredCapacity: 
         Ref: NodeCount
       HealthCheckGracePeriod: 30
@@ -65,13 +76,16 @@ Resources:
         - BlockDeviceMapping
       IamInstanceProfile: 
         Ref: IamProfile
-      ImageId: FIXME
+      ImageId: 
+        Ref: ImageId
       InstanceType: t2.small
       KeyName: 
         Ref: KeyName
       SecurityGroups: 
         - Ref: SecurityGroup
-      UserData: FIXME
+      UserData: 
+        Fn::Base64: Fn::Sub: |
+          echo "Test" > /tmp/output.txt
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -81,9 +95,17 @@ Resources:
       GroupName: 
         Fn::Sub: "${AWS::StackName}-SecurityGroup"
       SecurityGroupEgress: 
-        - 
+        - CidrIp: 
+            Ref: AccessIp
+          FromPort: 0
+          IpProtocol: tcp
+          ToPort: 65535
       SecurityGroupIngress: 
-        - 
+        - CidrIp: AccessIp
+          FromPort: 0
+          IpProtocol: tcp
+          ToPort: 65535
+
       Tags: 
         - Key: Name
           Value: 
