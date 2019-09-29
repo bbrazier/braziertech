@@ -93,9 +93,11 @@ Resources:
 
             # Install Python
             sudo apt-get install python3.6
-            
-            
+            sudo apt install python-pip
+            pip install boto3
+
             # Configure DB
+            echo "dynamodb = boto3.resource('dynamodb') > /tmp/application.py
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -164,3 +166,24 @@ Resources:
           Action: "ec2:Read*"
           Resource:
             Fn::Sub: "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: ID
+          AttributeType: S
+        - AttributeName: User
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST 
+      KeySchema: 
+        - AttributeName: ID
+          KeyType: HASH
+        - AttributeName: User
+          KeyType: RANGE
+      TableName: 
+        Fn::Sub: "${AWS::StackName}-DynamoDBTable"
+      Tags: 
+        - Key: Name
+          Value: 
+            Fn::Sub: "${AWS::StackName}-DynamoDBTable"
