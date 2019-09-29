@@ -69,8 +69,6 @@ Resources:
   LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties: 
-      BlockDeviceMappings: 
-        - BlockDeviceMapping
       IamInstanceProfile: 
         Ref: IamProfile
       ImageId: 
@@ -84,6 +82,20 @@ Resources:
         Fn::Base64: 
           Fn::Sub: |
             echo "Test" > /tmp/output.txt
+
+            # Initial Config
+            sudo apt update
+
+            # Install Apache
+            sudo apt install apache2
+            sudo mkdir /var/www/application
+            echo "<h1>Hello World</h1>" > /var/www/application/index.html
+
+            # Install Python
+            sudo apt-get install python3.6
+            
+            
+            # Configure DB
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -99,7 +111,8 @@ Resources:
           IpProtocol: tcp
           ToPort: 65535
       SecurityGroupIngress: 
-        - CidrIp: AccessIp
+        - CidrIp: 
+            Ref: AccessIp
           FromPort: 0
           IpProtocol: tcp
           ToPort: 65535
