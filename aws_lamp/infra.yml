@@ -104,6 +104,7 @@ Resources:
             sudo mkdir /var/www/application
             sudo apt-get install python3.6 -y
             sudo apt install python3-pip -y
+            mkdir /opt/$appname
             python3 -m pip install boto3 -t /opt/$appname/
             python3 -m pip install flask -t /opt/$appname/
             sudo apt-get install libapache2-mod-wsgi -y
@@ -112,8 +113,6 @@ Resources:
 
             echo "<h1>$appname</h1>" > /var/www/html/index.html
             echo "<a href='/app'><p>Application Link</p></a>" >> /var/www/html/index.html
-
-            mkdir /opt/$appname
 
             ## Application File
             echo '
@@ -134,33 +133,33 @@ Resources:
             @app.route("/")
 
             def hello():
-                dynamodb = boto3.resource('dynamodb',  region_name='ap-southeast-2')
-                table = dynamodb.Table('${AWS::StackName}-DynamoDBTable')
+                dynamodb = boto3.resource("dynamodb",  region_name="ap-southeast-2")
+                table = dynamodb.Table("${AWS::StackName}-DynamoDBTable")
                 table.put_item(
                     Item={
-                        'ID': str(random.randint(0, 1000)),
-                        'User': 'John'
+                        "ID": str(random.randint(0, 1000)),
+                        "User": "John"
                     }
                 )
-                client = boto3.client('dynamodb',  region_name='ap-southeast-2')
-                response = len(client.scan(TableName='${AWS::StackName}-DynamoDBTable')['Items'])
+                client = boto3.client("dynamodb",  region_name="ap-southeast-2")
+                response = len(client.scan(TableName="${AWS::StackName}-DynamoDBTable")["Items"])
                 return "The number of rows in the table is " + str(response)
 
             def application(environ, start_response):
-                status = '200 OK'
+                status = "200 OK"
                 html = hello()
-                response_header = [('Content-type','text/html')]
+                response_header = [("Content-type","text/html")]
                 start_response(status,response_header)
                 return [html]
 
-            if __name__ == '__main__':
+            if __name__ == "__main__":
                 print(hello())
 
             ' > /opt/$appname/app.py
 
             echo "
             <VirtualHost *:80>
-                 ServerName www.test.com
+                 ServerAlias \"*\"
                  # Give an alias to to start your website url with
                  WSGIScriptAlias /app /opt/$appname/app.py
                  <Directory /opt/$appname/>
