@@ -98,50 +98,61 @@ Resources:
 
             appname="application"
 
-            # Install Apache
+            # Install
 
             sudo apt install apache2 -y
             sudo mkdir /var/www/application
-            echo "<h1>$appname</h1>" > /var/www/html/index.html
-
-            # Install Python
-
             sudo apt-get install python3.6 -y
             sudo apt install python3-pip -y
-            python3 -m pip install boto3
-            python3 -m pip install flask
+            python3 -m pip install boto3 -t /opt/$appname/
+            python3 -m pip install flask -t /opt/$appname/
+            sudo apt-get install libapache2-mod-wsgi -y
 
-            # Configure Application
+            # Configure
+
+            echo "<h1>$appname</h1>" > /var/www/html/index.html
+            echo "<a href='/app'><p>Application Link</p></a>" >> /var/www/html/index.html
 
             mkdir /opt/$appname
 
+            ## Application File
             echo '
+
+            #!/usr/bin/python3
+
+            import sys
+            import os
+
+            sys.path.append(os.path.dirname(__file__))
+
+            import boto3
             from flask import Flask
+
             app = Flask(__name__)
+
             @app.route("/")
+
             def hello():
                 # dynamodb = boto3.resource('dynamodb')
                 return "Hello world!"
-            if __name__ == "__main__":
-              app.run()
+
+            def application(environ, start_response):
+                status = '200 OK'
+                html = hello()
+                response_header = [('Content-type','text/html')]
+                start_response(status,response_header)
+                return [html]
+
+            if __name__ == '__main__':
+              hello()
+
             ' > /opt/$appname/app.py
-
-            echo "
-            #! /usr/bin/python3.6
-            import logging
-            import sys
-            logging.basicConfig(stream=sys.stderr)
-            sys.path.insert(0, '/opt/$appname/')
-            from app import app as application
-            " > /opt/$appname/app.wsgi
-
-            # Configure Apache
 
             echo "
             <VirtualHost *:80>
                  ServerName www.test.com
                  # Give an alias to to start your website url with
-                 WSGIScriptAlias /testFlask /opt/$appname/app.wsgi
+                 WSGIScriptAlias /app /opt/$appname/app.py
                  <Directory /opt/$appname/>
                     # set permissions as per apache2.conf file
                         Options FollowSymLinks
