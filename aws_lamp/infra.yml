@@ -251,44 +251,30 @@ Resources:
           Resource:
             Fn::Sub: "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
         - Effect: "Allow"
-          Action: "ec2:Read*"
-          Resource:
-            Fn::Sub: "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:*"
-
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:BatchGetItem",
-                "dynamodb:ConditionCheckItem",
-                "dynamodb:PutItem",
-                "dynamodb:Scan",
-                "dynamodb:ListTagsOfResource",
-                "dynamodb:Query",
-                "dynamodb:DescribeStream",
-                "dynamodb:UpdateItem",
-                "dynamodb:DescribeTimeToLive",
-                "dynamodb:ListStreams",
-                "dynamodb:DescribeGlobalTableSettings",
-                "dynamodb:DescribeReservedCapacityOfferings",
-                "dynamodb:DescribeTable",
-                "dynamodb:GetShardIterator",
-                "dynamodb:DescribeGlobalTable",
-                "dynamodb:DescribeReservedCapacity",
-                "dynamodb:GetItem",
-                "ec2:Read*",
-                "dynamodb:DescribeContinuousBackups",
-                "dynamodb:DescribeBackup",
-                "dynamodb:DescribeLimits",
-                "dynamodb:GetRecords"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
+          Action: 
+            - "dynamodb:BatchGetItem"
+            - "dynamodb:ConditionCheckItem"
+            - "dynamodb:PutItem"
+            - "dynamodb:Scan"
+            - "dynamodb:ListTagsOfResource"
+            - "dynamodb:Query"
+            - "dynamodb:DescribeStream"
+            - "dynamodb:UpdateItem"
+            - "dynamodb:DescribeTimeToLive"
+            - "dynamodb:ListStreams"
+            - "dynamodb:DescribeGlobalTableSettings"
+            - "dynamodb:DescribeReservedCapacityOfferings"
+            - "dynamodb:DescribeTable"
+            - "dynamodb:GetShardIterator"
+            - "dynamodb:DescribeGlobalTable"
+            - "dynamodb:DescribeReservedCapacity"
+            - "dynamodb:GetItem"
+            - "ec2:Read*"
+            - "dynamodb:DescribeContinuousBackups"
+            - "dynamodb:DescribeBackup"
+            - "dynamodb:DescribeLimits"
+            - "dynamodb:GetRecords"
+          Resource: "*"
 
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
